@@ -24,10 +24,6 @@
         table, th, td {
             border: 1px solid black;
         }
-
-        #downloadButton {
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -55,7 +51,7 @@
         </tbody>
     </table>
 
-    <button id="downloadButton" onclick="downloadTableData()">Download Data</button>
+    <button onclick="downloadData()">Download Data</button>
 
     <script>
         let imageElement = document.getElementById('selectedImage');
@@ -115,22 +111,20 @@
             }
         }
 
-        function downloadTableData() {
-            let rows = dimensionsTable.getElementsByTagName('tr');
+        function downloadData() {
             let csvContent = 'data:text/csv;charset=utf-8,';
+            csvContent += 'X Axis,Y Axis\n';
 
+            let rows = dimensionsTable.getElementsByTagName('tr');
             for (let i = 0; i < rows.length; i++) {
-                let cells = rows[i].getElementsByTagName('td');
-                for (let j = 0; j < cells.length; j++) {
-                    csvContent += cells[j].textContent + ',';
-                }
-                csvContent += '\n';
+                let cols = rows[i].getElementsByTagName('td');
+                csvContent += `${cols[0].innerText},${cols[1].innerText}\n`;
             }
 
             let encodedUri = encodeURI(csvContent);
             let link = document.createElement('a');
             link.setAttribute('href', encodedUri);
-            link.setAttribute('download', 'table_data.csv');
+            link.setAttribute('download', 'selected_data.csv');
             document.body.appendChild(link);
             link.click();
         }
