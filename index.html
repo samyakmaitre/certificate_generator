@@ -5,19 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Area Selector</title>
     <style>
-        #imageContainer {
+        #image-container {
             position: relative;
-            margin-top: 20px;
         }
 
-        #selectedArea {
-            position: absolute;
+        #selection-box {
             border: 2px dashed red;
-            pointer-events: none;
+            position: absolute;
+            display: none;
         }
 
-        #dimensionsTable {
+        table {
             margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
         }
     </style>
 </head>
@@ -26,9 +33,9 @@
 
     <input type="file" id="imageInput" accept="image/*">
     
-    <div id="imageContainer">
+    <div id="image-container">
         <img id="selectedImage" alt="Selected Image">
-        <div id="selectedArea"></div>
+        <div id="selection-box"></div>
     </div>
 
     <table id="dimensionsTable">
@@ -40,71 +47,101 @@
                 <th>Height</th>
             </tr>
         </thead>
-        <tbody id="dimensionsBody"></tbody>
+        <tbody>
+            <!-- The selected dimensions will be added here dynamically -->
+        </tbody>
     </table>
 
     <script>
-        document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+        const imageInput = document.getElementById('imageInput');
+        const selectedImage = document.getElementById('selectedImage');
+        const selectionBox = document.getElementById('selection-box');
+        const dimensionsTable = document.getElementById('dimensionsTable').getElementsByTagName('tbody')[0];
+
+        imageInput.addEventListener('change', handleImageUpload);
 
         function handleImageUpload(event) {
-            const input = event.target;
-            if (input.files && input.files[0]) {
+            const file = event.target.files[0];
+
+            if (file) {
                 const reader = new FileReader();
 
                 reader.onload = function (e) {
-                    const img = document.getElementById('selectedImage');
-                    img.src = e.target.result;
-
-                    img.onload = function () {
-                        initializeImageDimensions(img);
-                        img.onclick = function (e) {
-                            selectImageArea(e, img);
-                        };
+                    selectedImage.src = e.target.result;
+                    selectedImage.onload = function () {
+                        initializeImageSelection();
                     };
                 };
 
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 
-        function initializeImageDimensions(img) {
-            const imageContainer = document.getElementById('imageContainer');
-            imageContainer.style.width = img.width + 'px';
-            imageContainer.style.height = img.height + 'px';
+        function initializeImageSelection() {
+            selectedImage.style.cursor = 'crosshair';
 
-            const selectedArea = document.getElementById('selectedArea');
-            selectedArea.style.width = img.width + 'px';
-            selectedArea.style.height = img.height + 'px';
+            selectedImage.addEventListener('mousedown', startSelection);
+            selectedImage.addEventListener('mousemove', updateSelection);
+            selectedImage.addEventListener('mouseup', endSelection);
         }
 
-        function selectImageArea(e, img) {
-            const selectedArea = document.getElementById('selectedArea');
+        let startX, startY;
 
-            const rect = img.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        function startSelection(event) {
+            startX = event.clientX - selectedImage.offsetLeft;
+            startY = event.clientY - selectedImage.offsetTop;
 
-            selectedArea.style.left = x + 'px';
-            selectedArea.style.top = y + 'px';
+            selectionBox.style.width = '0';
+            selectionBox.style.height = '0';
+            selectionBox.style.left = startX + 'px';
+            selectionBox.style.top = startY + 'px';
+            selectionBox.style.display = 'block';
 
-            const dimensions = {
-                x: x,
-                y: y,
-                width: selectedArea.offsetWidth,
-                height: selectedArea.offsetHeight
-            };
-
-            updateDimensionsTable(dimensions);
+            selectedImage.removeEventListener('mousemove', updateSelection);
+            selectedImage.addEventListener('mousemove', updateSelection);
         }
 
-        function updateDimensionsTable(dimensions) {
-            const tableBody = document.getElementById('dimensionsBody');
-            const newRow = tableBody.insertRow();
+        function updateSelection(event) {
+            const currentX = event.clientX - selectedImage.offsetLeft;
+            const currentY = event.clientY - selectedImage.offsetTop;
 
-            newRow.insertCell().textContent = dimensions.x.toFixed(2);
-            newRow.insertCell().textContent = dimensions.y.toFixed(2);
-            newRow.insertCell().textContent = dimensions.width.toFixed(2);
-            newRow.insertCell().textContent = dimensions.height.toFixed(2);
+            const width = currentX - startX;
+            const height = currentY - startY;
+
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        }
+
+        function endSelection() {
+            const width = parseInt(selectionBox.style.width);
+            const height = parseInt(selectionBox.style.height);
+
+            const x = startX;
+            const y = startY;
+
+            // Add the selected dimensions to the table
+            addDimensionsToTable(x, y, width, height);
+
+            // Reset the selection box
+            selectionBox.style.width = '0';
+            selectionBox.style.height = '0';
+            selectionBox.style.display = 'none';
+
+            selectedImage.removeEventListener('mousemove', updateSelection);
+        }
+
+        function addDimensionsToTable(x, y, width, height) {
+            const newRow = dimensionsTable.insertRow();
+
+            const cellX = newRow.insertCell(0);
+            const cellY = newRow.insertCell(1);
+            const cellWidth = newRow.insertCell(2);
+            const cellHeight = newRow.insertCell(3);
+
+            cellX.innerHTML = x;
+            cellY.innerHTML = y;
+            cellWidth.innerHTML = width;
+            cellHeight.innerHTML = height;
         }
     </script>
 </body>
