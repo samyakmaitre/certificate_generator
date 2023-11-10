@@ -3,130 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Area Selector</title>
-    <style>
-        #imageContainer {
-            position: relative;
-        }
-
-        #selectedArea {
-            border: 2px solid red;
-            position: absolute;
-            display: none;
-        }
-
-        table {
-            margin-top: 20px;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        table, th, td {
-            border: 1px solid black;
-        }
-    </style>
+    <title>Image and Text Editor</title>
 </head>
 <body>
-    <h1>Image Area Selector</h1>
+    <h1>Image and Text Editor</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="imageUpload">Upload Image:</label>
+        <input type="file" id="imageUpload" accept="image/*" required><br>
+
+        <label for="excelSheet">Upload Excel Sheet:</label>
+        <input type="file" id="excelSheet" accept=".xlsx, .xls" required><br>
+
+        <label for="textToAdd">Text to Add:</label>
+        <input type="text" id="textToAdd" placeholder="Enter text"><br>
+
+        <button type="button" onclick="processImage()">Process Image</button>
+    </form>
 
     <div>
-        <label for="imageUpload">Upload Image:</label>
-        <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
+        <img id="editedImage" style="max-width: 100%;" alt="Edited Image">
     </div>
-
-    <div id="imageContainer">
-        <img id="selectedImage" style="max-width: 100%;" alt="Selected Image">
-        <div id="selectedArea"></div>
-    </div>
-
-    <table id="dimensionsTable">
-        <thead>
-            <tr>
-                <th>X Axis</th>
-                <th>Y Axis</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- The selected area dimensions will be added here dynamically -->
-        </tbody>
-    </table>
-
-    <button onclick="downloadData()">Download Data</button>
 
     <script>
-        let imageElement = document.getElementById('selectedImage');
-        let selectedAreaElement = document.getElementById('selectedArea');
-        let dimensionsTable = document.getElementById('dimensionsTable').getElementsByTagName('tbody')[0];
-
-        function handleImageUpload(event) {
-            let file = event.target.files[0];
-            if (file) {
-                let reader = new FileReader();
-                reader.onload = function (e) {
-                    imageElement.src = e.target.result;
-                    imageElement.onload = function () {
-                        initializeImageSelector();
-                    };
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function initializeImageSelector() {
-            imageElement.style.cursor = 'crosshair';
-            imageElement.addEventListener('mousedown', startSelection);
-        }
-
-        function startSelection(e) {
-            e.preventDefault();
-
-            let startX = e.clientX;
-            let startY = e.clientY;
-
-            document.addEventListener('mousemove', updateSelection);
-            document.addEventListener('mouseup', endSelection);
-
-            function updateSelection(e) {
-                let width = e.clientX - startX;
-                let height = e.clientY - startY;
-
-                selectedAreaElement.style.width = Math.abs(width) + 'px';
-                selectedAreaElement.style.height = Math.abs(height) + 'px';
-                selectedAreaElement.style.left = (width > 0 ? startX : e.clientX) + 'px';
-                selectedAreaElement.style.top = (height > 0 ? startY : e.clientY) + 'px';
-
-                selectedAreaElement.style.display = 'block';
-            }
-
-            function endSelection(e) {
-                document.removeEventListener('mousemove', updateSelection);
-                document.removeEventListener('mouseup', endSelection);
-
-                let x = parseInt(selectedAreaElement.style.left, 10);
-                let y = parseInt(selectedAreaElement.style.top, 10);
-
-                dimensionsTable.innerHTML += `<tr><td>${x}px</td><td>${y}px</td></tr>`;
-
-                selectedAreaElement.style.display = 'none';
-            }
-        }
-
-        function downloadData() {
-            let csvContent = 'data:text/csv;charset=utf-8,';
-            csvContent += 'X Axis,Y Axis\n';
-
-            let rows = dimensionsTable.getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                let cols = rows[i].getElementsByTagName('td');
-                csvContent += `${cols[0].innerText},${cols[1].innerText}\n`;
-            }
-
-            let encodedUri = encodeURI(csvContent);
-            let link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', 'selected_data.csv');
-            document.body.appendChild(link);
-            link.click();
+        function processImage() {
+            // Add JavaScript logic to handle file uploads, interact with the backend, and display the edited image.
+            // This could involve using FormData to send files to the server.
         }
     </script>
 </body>
