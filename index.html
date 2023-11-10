@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Annotation</title>
+    <title>Image and CSV Processor</title>
     <style>
         #imageContainer {
             position: relative;
-            margin-bottom: 20px;
         }
 
         #selectedArea {
@@ -16,18 +15,23 @@
             display: none;
         }
 
-        #textOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        #textToPlace {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Image Annotation</h1>
+    <h1>Image and CSV Processor</h1>
 
     <div>
         <label for="imageUpload">1. Upload Image:</label>
@@ -37,36 +41,129 @@
     <div id="imageContainer">
         <img id="selectedImage" style="max-width: 100%;" alt="Selected Image">
         <div id="selectedArea"></div>
-        <div id="textOverlay"></div>
+    </div>
+
+    <div id="imageDimensions">
+        <p>2. Image Dimensions:</p>
+        <p>X Axis: <span id="xAxis">0</span></p>
+        <p>Y Axis: <span id="yAxis">0</span></p>
     </div>
 
     <div>
-        <p>2. Select a rectangle area on the image:</p>
-        <p>Dimensions: <span id="dimensions">-</span></p>
-    </div>
-
-    <div>
-        <p>3. Download CSV File:</p>
-        <button onclick="downloadCSV()">Download CSV</button>
-    </div>
-
-    <div>
-        <p>4. Upload CSV File:</p>
+        <label for="csvUpload">4. Upload CSV File:</label>
         <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)">
     </div>
 
     <div>
-        <p>5. Type text in the uploaded CSV file:</p>
-        <textarea id="textArea" placeholder="Type your text here"></textarea>
+        <label for="textToPlace">5. Text to Place:</label>
+        <input type="text" id="textToPlace">
     </div>
 
-    <div>
-        <p>6. Download Image with Text:</p>
-        <button onclick="downloadImageWithText()">Download Image with Text</button>
-    </div>
+    <button onclick="downloadImage()">6. Download Image</button>
 
     <script>
-        // JavaScript functions go here
+        let imageElement = document.getElementById('selectedImage');
+        let selectedAreaElement = document.getElementById('selectedArea');
+        let xAxisElement = document.getElementById('xAxis');
+        let yAxisElement = document.getElementById('yAxis');
+        let textToPlaceElement = document.getElementById('textToPlace');
+
+        function handleImageUpload(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    imageElement.src = e.target.result;
+                    imageElement.onload = function () {
+                        initializeImageSelector();
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function initializeImageSelector() {
+            imageElement.style.cursor = 'crosshair';
+            imageElement.addEventListener('mousedown', startSelection);
+        }
+
+        function startSelection(e) {
+            e.preventDefault();
+
+            let startX = e.clientX;
+            let startY = e.clientY;
+
+            document.addEventListener('mousemove', updateSelection);
+            document.addEventListener('mouseup', endSelection);
+
+            function updateSelection(e) {
+                let width = e.clientX - startX;
+                let height = e.clientY - startY;
+
+                selectedAreaElement.style.width = Math.abs(width) + 'px';
+                selectedAreaElement.style.height = Math.abs(height) + 'px';
+                selectedAreaElement.style.left = (width > 0 ? startX : e.clientX) + 'px';
+                selectedAreaElement.style.top = (height > 0 ? startY : e.clientY) + 'px';
+
+                selectedAreaElement.style.display = 'block';
+
+                // Update dimensions
+                xAxisElement.textContent = selectedAreaElement.style.left;
+                yAxisElement.textContent = selectedAreaElement.style.top;
+            }
+
+            function endSelection() {
+                document.removeEventListener('mousemove', updateSelection);
+                document.removeEventListener('mouseup', endSelection);
+            }
+        }
+
+        function handleCSVUpload(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    // Assuming the CSV has headers "x-axis" and "y-axis"
+                    let csvData = e.target.result;
+                    // Parse CSV data and update the text input
+                    // (You may need a CSV parsing library for more complex CSVs)
+                    let lines = csvData.split('\n');
+                    if (lines.length > 1) {
+                        let values = lines[1].split(',');
+                        if (values.length === 2) {
+                            textToPlaceElement.value = `${values[0]},${values[1]}`;
+                        }
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function downloadImage() {
+            let canvas = document.createElement('canvas');
+            canvas.width = imageElement.width;
+            canvas.height = imageElement.height;
+            let context = canvas.getContext('2d');
+            context.drawImage(imageElement, 0, 0);
+
+            // Get dimensions from CSV input
+            let dimensions = textToPlaceElement.value.split(',');
+            let x = parseInt(dimensions[0], 10);
+            let y = parseInt(dimensions[1], 10);
+
+            // Draw text at specified dimensions
+            context.font = '20px Arial';
+            context.fillStyle = 'black';
+            context.fillText('Your Text Here', x, y);
+
+            // Create a link element and trigger download
+            let link = document.createElement('a');
+            link.href = canvas.toDataURL();
+            link.download = 'output_image.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 </html>
