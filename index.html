@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image and CSV Processor</title>
+    <title>Image Text Editor</title>
     <style>
         #imageContainer {
             position: relative;
@@ -15,23 +15,17 @@
             display: none;
         }
 
-        table {
-            margin-top: 20px;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        table, th, td {
+        #textBox {
+            position: absolute;
+            display: none;
             border: 1px solid black;
-        }
-
-        #textToPlace {
-            margin-top: 10px;
+            background-color: white;
+            padding: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>Image and CSV Processor</h1>
+    <h1>Image Text Editor</h1>
 
     <div>
         <label for="imageUpload">1. Upload Image:</label>
@@ -41,32 +35,15 @@
     <div id="imageContainer">
         <img id="selectedImage" style="max-width: 100%;" alt="Selected Image">
         <div id="selectedArea"></div>
+        <div id="textBox" contenteditable="true"></div>
     </div>
 
-    <div id="imageDimensions">
-        <p>2. Image Dimensions:</p>
-        <p>X Axis: <span id="xAxis">0</span></p>
-        <p>Y Axis: <span id="yAxis">0</span></p>
-    </div>
-
-    <div>
-        <label for="csvUpload">4. Upload CSV File:</label>
-        <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)">
-    </div>
-
-    <div>
-        <label for="textToPlace">5. Text to Place:</label>
-        <input type="text" id="textToPlace">
-    </div>
-
-    <button onclick="downloadImage()">6. Download Image</button>
+    <button onclick="downloadImage()">4. Download Image</button>
 
     <script>
         let imageElement = document.getElementById('selectedImage');
         let selectedAreaElement = document.getElementById('selectedArea');
-        let xAxisElement = document.getElementById('xAxis');
-        let yAxisElement = document.getElementById('yAxis');
-        let textToPlaceElement = document.getElementById('textToPlace');
+        let textBoxElement = document.getElementById('textBox');
 
         function handleImageUpload(event) {
             let file = event.target.files[0];
@@ -75,14 +52,14 @@
                 reader.onload = function (e) {
                     imageElement.src = e.target.result;
                     imageElement.onload = function () {
-                        initializeImageSelector();
+                        initializeImageEditor();
                     };
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function initializeImageSelector() {
+        function initializeImageEditor() {
             imageElement.style.cursor = 'crosshair';
             imageElement.addEventListener('mousedown', startSelection);
         }
@@ -107,59 +84,37 @@
 
                 selectedAreaElement.style.display = 'block';
 
-                // Update dimensions
-                xAxisElement.textContent = selectedAreaElement.style.left;
-                yAxisElement.textContent = selectedAreaElement.style.top;
+                // Position the text box
+                textBoxElement.style.left = selectedAreaElement.style.left;
+                textBoxElement.style.top = selectedAreaElement.style.top;
+                textBoxElement.style.width = selectedAreaElement.style.width;
+                textBoxElement.style.height = selectedAreaElement.style.height;
+                textBoxElement.style.display = 'block';
             }
 
-            function endSelection() {
+            function endSelection(e) {
                 document.removeEventListener('mousemove', updateSelection);
                 document.removeEventListener('mouseup', endSelection);
             }
         }
 
-        function handleCSVUpload(event) {
-            let file = event.target.files[0];
-            if (file) {
-                let reader = new FileReader();
-                reader.onload = function (e) {
-                    // Assuming the CSV has headers "x-axis" and "y-axis"
-                    let csvData = e.target.result;
-                    // Parse CSV data and update the text input
-                    // (You may need a CSV parsing library for more complex CSVs)
-                    let lines = csvData.split('\n');
-                    if (lines.length > 1) {
-                        let values = lines[1].split(',');
-                        if (values.length === 2) {
-                            textToPlaceElement.value = `${values[0]},${values[1]}`;
-                        }
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
         function downloadImage() {
             let canvas = document.createElement('canvas');
+            let context = canvas.getContext('2d');
+
             canvas.width = imageElement.width;
             canvas.height = imageElement.height;
-            let context = canvas.getContext('2d');
+
             context.drawImage(imageElement, 0, 0);
 
-            // Get dimensions from CSV input
-            let dimensions = textToPlaceElement.value.split(',');
-            let x = parseInt(dimensions[0], 10);
-            let y = parseInt(dimensions[1], 10);
-
-            // Draw text at specified dimensions
+            let text = textBoxElement.innerText;
             context.font = '20px Arial';
             context.fillStyle = 'black';
-            context.fillText('Your Text Here', x, y);
+            context.fillText(text, parseInt(textBoxElement.style.left, 10), parseInt(textBoxElement.style.top, 10) + 20);
 
-            // Create a link element and trigger download
             let link = document.createElement('a');
             link.href = canvas.toDataURL();
-            link.download = 'output_image.png';
+            link.download = 'edited_image.png';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
