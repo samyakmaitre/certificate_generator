@@ -24,6 +24,10 @@
         table, th, td {
             border: 1px solid black;
         }
+
+        #downloadButton {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -50,6 +54,8 @@
             <!-- The selected area dimensions will be added here dynamically -->
         </tbody>
     </table>
+
+    <button id="downloadButton" onclick="downloadTableData()">Download Data</button>
 
     <script>
         let imageElement = document.getElementById('selectedImage');
@@ -107,6 +113,26 @@
 
                 selectedAreaElement.style.display = 'none';
             }
+        }
+
+        function downloadTableData() {
+            let rows = dimensionsTable.getElementsByTagName('tr');
+            let csvContent = 'data:text/csv;charset=utf-8,';
+
+            for (let i = 0; i < rows.length; i++) {
+                let cells = rows[i].getElementsByTagName('td');
+                for (let j = 0; j < cells.length; j++) {
+                    csvContent += cells[j].textContent + ',';
+                }
+                csvContent += '\n';
+            }
+
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'table_data.csv');
+            document.body.appendChild(link);
+            link.click();
         }
     </script>
 </body>
