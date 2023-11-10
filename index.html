@@ -5,143 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Area Selector</title>
     <style>
-        #image-container {
+        #imageContainer {
             position: relative;
         }
 
-        #selection-box {
+        #selectionBox {
             border: 2px dashed red;
             position: absolute;
-            display: none;
-        }
-
-        table {
-            margin-top: 20px;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
     <h1>Image Area Selector</h1>
 
-    <input type="file" id="imageInput" accept="image/*">
-    
-    <div id="image-container">
-        <img id="selectedImage" alt="Selected Image">
-        <div id="selection-box"></div>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="imageUpload">Upload Image:</label>
+        <input type="file" id="imageUpload" accept="image/*" required><br>
+
+        <button type="button" onclick="clearSelection()">Clear Selection</button>
+    </form>
+
+    <div id="imageContainer">
+        <img id="uploadedImage" alt="Uploaded Image" style="max-width: 100%;">
+
+        <div id="selectionBox"></div>
     </div>
 
     <table id="dimensionsTable">
         <thead>
             <tr>
-                <th>X-axis</th>
-                <th>Y-axis</th>
+                <th>X Axis</th>
+                <th>Y Axis</th>
                 <th>Width</th>
                 <th>Height</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- The selected dimensions will be added here dynamically -->
-        </tbody>
+        <tbody></tbody>
     </table>
 
     <script>
-        const imageInput = document.getElementById('imageInput');
-        const selectedImage = document.getElementById('selectedImage');
-        const selectionBox = document.getElementById('selection-box');
-        const dimensionsTable = document.getElementById('dimensionsTable').getElementsByTagName('tbody')[0];
+        document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
 
-        imageInput.addEventListener('change', handleImageUpload);
+        function handleImageUpload() {
+            const uploadedImage = document.getElementById('uploadedImage');
+            const fileInput = document.getElementById('imageUpload');
 
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
+            const file = fileInput.files[0];
+            const reader = new FileReader();
 
-            if (file) {
-                const reader = new FileReader();
+            reader.onload = function (e) {
+                uploadedImage.src = e.target.result;
+            };
 
-                reader.onload = function (e) {
-                    selectedImage.src = e.target.result;
-                    selectedImage.onload = function () {
-                        initializeImageSelection();
-                    };
-                };
+            reader.readAsDataURL(file);
 
-                reader.readAsDataURL(file);
-            }
+            uploadedImage.onload = function () {
+                setupImageSelection();
+            };
         }
 
-        function initializeImageSelection() {
-            selectedImage.style.cursor = 'crosshair';
+        function setupImageSelection() {
+            const imageContainer = document.getElementById('imageContainer');
+            const selectionBox = document.getElementById('selectionBox');
 
-            selectedImage.addEventListener('mousedown', startSelection);
-            selectedImage.addEventListener('mousemove', updateSelection);
-            selectedImage.addEventListener('mouseup', endSelection);
+            let isSelecting = false;
+            let startX, startY;
+
+            imageContainer.addEventListener('mousedown', (e) => {
+                isSelecting = true;
+                startX = e.clientX;
+                startY = e.clientY;
+
+                updateSelectionBox(startX, startY, 0, 0);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isSelecting) {
+                    const width = e.clientX - startX;
+                    const height = e.clientY - startY;
+
+                    updateSelectionBox(startX, startY, width, height);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isSelecting) {
+                    isSelecting = false;
+
+                    const dimensionsTable = document.getElementById('dimensionsTable').getElementsByTagName('tbody')[0];
+                    const row = dimensionsTable.insertRow(-1);
+                    const cellX = row.insertCell(0);
+                    const cellY = row.insertCell(1);
+                    const cellWidth = row.insertCell(2);
+                    const cellHeight = row.insertCell(3);
+
+                    cellX.innerHTML = startX;
+                    cellY.innerHTML = startY;
+                    cellWidth.innerHTML = selectionBox.offsetWidth;
+                    cellHeight.innerHTML = selectionBox.offsetHeight;
+                }
+            });
         }
 
-        let startX, startY;
+        function updateSelectionBox(x, y, width, height) {
+            const selectionBox = document.getElementById('selectionBox');
 
-        function startSelection(event) {
-            startX = event.clientX - selectedImage.offsetLeft;
-            startY = event.clientY - selectedImage.offsetTop;
-
-            selectionBox.style.width = '0';
-            selectionBox.style.height = '0';
-            selectionBox.style.left = startX + 'px';
-            selectionBox.style.top = startY + 'px';
-            selectionBox.style.display = 'block';
-
-            selectedImage.removeEventListener('mousemove', updateSelection);
-            selectedImage.addEventListener('mousemove', updateSelection);
-        }
-
-        function updateSelection(event) {
-            const currentX = event.clientX - selectedImage.offsetLeft;
-            const currentY = event.clientY - selectedImage.offsetTop;
-
-            const width = currentX - startX;
-            const height = currentY - startY;
-
+            selectionBox.style.left = x + 'px';
+            selectionBox.style.top = y + 'px';
             selectionBox.style.width = width + 'px';
             selectionBox.style.height = height + 'px';
         }
 
-        function endSelection() {
-            const width = parseInt(selectionBox.style.width);
-            const height = parseInt(selectionBox.style.height);
-
-            const x = startX;
-            const y = startY;
-
-            // Add the selected dimensions to the table
-            addDimensionsToTable(x, y, width, height);
-
-            // Reset the selection box
+        function clearSelection() {
+            const selectionBox = document.getElementById('selectionBox');
             selectionBox.style.width = '0';
             selectionBox.style.height = '0';
-            selectionBox.style.display = 'none';
 
-            selectedImage.removeEventListener('mousemove', updateSelection);
-        }
-
-        function addDimensionsToTable(x, y, width, height) {
-            const newRow = dimensionsTable.insertRow();
-
-            const cellX = newRow.insertCell(0);
-            const cellY = newRow.insertCell(1);
-            const cellWidth = newRow.insertCell(2);
-            const cellHeight = newRow.insertCell(3);
-
-            cellX.innerHTML = x;
-            cellY.innerHTML = y;
-            cellWidth.innerHTML = width;
-            cellHeight.innerHTML = height;
+            const dimensionsTable = document.getElementById('dimensionsTable').getElementsByTagName('tbody')[0];
+            dimensionsTable.innerHTML = '';
         }
     </script>
 </body>
