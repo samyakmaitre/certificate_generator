@@ -32,6 +32,21 @@
         <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
     </div>
 
+    <div>
+        <label for="fontSize">Font Size:</label>
+        <input type="number" id="fontSize" value="20" min="1" onchange="changeFontSize(event)">
+    </div>
+
+    <div>
+        <label for="fontStyle">Font Style:</label>
+        <select id="fontStyle" onchange="changeFontStyle(event)">
+            <option value="Arial">Arial</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <!-- Add more font options as needed -->
+        </select>
+    </div>
+
     <div id="imageContainer">
         <img id="selectedImage" style="max-width: 100%;" alt="Selected Image">
         <div id="selectedArea"></div>
@@ -44,6 +59,8 @@
         let imageElement = document.getElementById('selectedImage');
         let selectedAreaElement = document.getElementById('selectedArea');
         let textBoxElement = document.getElementById('textBox');
+        let fontSizeElement = document.getElementById('fontSize');
+        let fontStyleElement = document.getElementById('fontStyle');
 
         function handleImageUpload(event) {
             let file = event.target.files[0];
@@ -108,9 +125,9 @@
             context.drawImage(imageElement, 0, 0);
 
             let text = textBoxElement.innerText;
-            context.font = '20px Arial';
+            context.font = `${fontSizeElement.value}px ${fontStyleElement.value}`;
             context.fillStyle = 'black';
-            context.fillText(text, parseInt(textBoxElement.style.left, 10), parseInt(textBoxElement.style.top, 10) + 20);
+            context.fillText(text, parseInt(textBoxElement.style.left, 10), parseInt(textBoxElement.style.top, 10) + parseInt(fontSizeElement.value, 10));
 
             let filename = text || 'image';
             let link = document.createElement('a');
@@ -119,6 +136,16 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function changeFontSize(event) {
+            let fontSize = event.target.value;
+            textBoxElement.style.fontSize = `${fontSize}px`;
+        }
+
+        function changeFontStyle(event) {
+            let fontStyle = event.target.value;
+            textBoxElement.style.fontFamily = fontStyle;
         }
     </script>
 </body>
