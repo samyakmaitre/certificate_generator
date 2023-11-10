@@ -112,9 +112,10 @@
             context.fillStyle = 'black';
             context.fillText(text, parseInt(textBoxElement.style.left, 10), parseInt(textBoxElement.style.top, 10) + 20);
 
+            let filename = text || 'image';
             let link = document.createElement('a');
             link.href = canvas.toDataURL();
-            link.download = 'edited_image.png';
+            link.download = `${filename}.png`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
