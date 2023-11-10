@@ -55,44 +55,47 @@
             imageContainer.style.height = imageElement.height + 'px';
 
             imageElement.style.cursor = 'crosshair';
-            imageElement.addEventListener('mousedown', startTextboxCreation);
+            imageElement.addEventListener('click', addTextbox);
         }
 
-        function startTextboxCreation(e) {
-            e.preventDefault();
-
-            let startX = e.clientX;
-            let startY = e.clientY;
+        function addTextbox(e) {
+            let x = e.clientX - imageContainer.offsetLeft;
+            let y = e.clientY - imageContainer.offsetTop;
 
             let textbox = document.createElement('textarea');
             textbox.className = 'textbox';
-            textbox.style.left = startX + 'px';
-            textbox.style.top = startY + 'px';
+            textbox.style.left = x + 'px';
+            textbox.style.top = y + 'px';
 
             imageContainer.appendChild(textbox);
 
             textboxes.push({
                 element: textbox,
-                startX,
-                startY
+                x,
+                y
             });
 
-            document.addEventListener('mousemove', updateTextboxCreation);
-            document.addEventListener('mouseup', endTextboxCreation);
+            // Make the textbox draggable
+            makeTextboxDraggable(textbox);
         }
 
-        function updateTextboxCreation(e) {
-            let currentTextbox = textboxes[textboxes.length - 1];
-            let width = e.clientX - currentTextbox.startX;
-            let height = e.clientY - currentTextbox.startY;
+        function makeTextboxDraggable(textbox) {
+            let offsetX, offsetY;
 
-            currentTextbox.element.style.width = Math.abs(width) + 'px';
-            currentTextbox.element.style.height = Math.abs(height) + 'px';
-        }
+            textbox.addEventListener('mousedown', function (e) {
+                offsetX = e.clientX - parseInt(textbox.style.left);
+                offsetY = e.clientY - parseInt(textbox.style.top);
 
-        function endTextboxCreation() {
-            document.removeEventListener('mousemove', updateTextboxCreation);
-            document.removeEventListener('mouseup', endTextboxCreation);
+                document.addEventListener('mousemove', dragTextbox);
+                document.addEventListener('mouseup', function () {
+                    document.removeEventListener('mousemove', dragTextbox);
+                });
+            });
+
+            function dragTextbox(e) {
+                textbox.style.left = e.clientX - offsetX + 'px';
+                textbox.style.top = e.clientY - offsetY + 'px';
+            }
         }
 
         function downloadImage() {
@@ -105,7 +108,7 @@
             textboxes.forEach((textbox) => {
                 context.font = '14px Arial';
                 context.fillStyle = 'black';
-                context.fillText(textbox.element.value, parseInt(textbox.element.style.left), parseInt(textbox.element.style.top));
+                context.fillText(textbox.element.value, textbox.x, textbox.y);
             });
 
             let downloadLink = document.createElement('a');
