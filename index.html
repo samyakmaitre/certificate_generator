@@ -3,121 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Text Editor</title>
+    <title>Image Uploader with Rectangular Selection and Textbox</title>
     <style>
-        #imageContainer {
-            position: relative;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #uploadContainer {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #uploadedImage {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        #selectionBox {
+            position: absolute;
+            border: 2px dashed red;
+            pointer-events: none;
+            display: none;
         }
 
         .textbox {
             position: absolute;
             border: 1px solid black;
-            background-color: white;
-            cursor: move;
+            background-color: #FFFFE0;
+            resize: both;
+            overflow: auto;
+        }
+
+        #downloadButton {
+            display: block;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>Image Text Editor</h1>
+    <h1>Image Uploader with Rectangular Selection and Textbox</h1>
 
-    <div>
-        <label for="imageUpload">1. Upload Image:</label>
+    <div id="uploadContainer">
+        <label for="imageUpload">Upload Image:</label>
         <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
     </div>
 
-    <div id="imageContainer">
-        <img id="editedImage" style="max-width: 100%;" alt="Edited Image">
+    <div id="uploadedImageContainer" style="position: relative;">
+        <img id="uploadedImage" alt="Uploaded Image">
+        <div id="selectionBox"></div>
     </div>
 
-    <button onclick="downloadImage()">4. Download Image</button>
+    <p id="coordinates"></p>
+
+    <button id="downloadButton" onclick="downloadCoordinates()">Download Coordinates</button>
 
     <script>
-        let imageElement = document.getElementById('editedImage');
-        let imageContainer = document.getElementById('imageContainer');
-        let textboxes = [];
+        let startX, startY, endX, endY;
+        const selectionBox = document.getElementById('selectionBox');
+        const coordinatesDisplay = document.getElementById('coordinates');
+        const downloadButton = document.getElementById('downloadButton');
+        let textboxCount = 0;
 
         function handleImageUpload(event) {
-            let file = event.target.files[0];
+            const uploadedImage = document.getElementById('uploadedImage');
+            const uploadedImageContainer = document.getElementById('uploadedImageContainer');
+
+            const file = event.target.files[0];
+
             if (file) {
-                let reader = new FileReader();
+                const reader = new FileReader();
+
                 reader.onload = function (e) {
-                    imageElement.src = e.target.result;
-                    imageElement.onload = function () {
-                        initializeImageEditor();
-                    };
+                    uploadedImage.src = e.target.result;
+                    uploadedImageContainer.style.display = 'block';
+                    uploadedImageContainer.style.width = uploadedImage.width + 'px';
+                    uploadedImageContainer.style.height = uploadedImage.height + 'px';
+
+                    // Reset selection box
+                    startX = startY = endX = endY = null;
+                    updateSelectionBox();
+
+                    // Attach event listeners
+                    uploadedImageContainer.addEventListener('mousedown', startSelection);
+                    uploadedImageContainer.addEventListener('mousemove', updateSelection);
+                    uploadedImageContainer.addEventListener('mouseup', endSelection);
                 };
+
                 reader.readAsDataURL(file);
             }
         }
 
-        function initializeImageEditor() {
-            imageContainer.style.width = imageElement.width + 'px';
-            imageContainer.style.height = imageElement.height + 'px';
-
-            imageElement.style.cursor = 'crosshair';
-            imageElement.addEventListener('click', addTextbox);
+        function startSelection(event) {
+            startX = event.clientX - uploadedImageContainer.getBoundingClientRect().left;
+            startY = event.clientY - uploadedImageContainer.getBoundingClientRect().top;
+            endX = startX;
+            endY = startY;
+            updateSelectionBox();
         }
 
-        function addTextbox(e) {
-            let x = e.clientX - imageContainer.offsetLeft;
-            let y = e.clientY - imageContainer.offsetTop;
+        function updateSelection(event) {
+            if (startX === null || startY === null) return;
 
-            let textbox = document.createElement('textarea');
-            textbox.className = 'textbox';
-            textbox.style.left = x + 'px';
-            textbox.style.top = y + 'px';
-
-            imageContainer.appendChild(textbox);
-
-            textboxes.push({
-                element: textbox,
-                x,
-                y
-            });
-
-            // Make the textbox draggable
-            makeTextboxDraggable(textbox);
+            endX = event.clientX - uploadedImageContainer.getBoundingClientRect().left;
+            endY = event.clientY - uploadedImageContainer.getBoundingClientRect().top;
+            updateSelectionBox();
         }
 
-        function makeTextboxDraggable(textbox) {
-            let offsetX, offsetY;
+        function endSelection() {
+            if (startX !== null && startY !== null) {
+                // Display coordinates
+                const coordinatesText = `Selected Area: (${startX}, ${startY}) to (${endX}, ${endY})`;
+                coordinatesDisplay.innerText = coordinatesText;
 
-            textbox.addEventListener('mousedown', function (e) {
-                offsetX = e.clientX - parseInt(textbox.style.left);
-                offsetY = e.clientY - parseInt(textbox.style.top);
-
-                document.addEventListener('mousemove', dragTextbox);
-                document.addEventListener('mouseup', function () {
-                    document.removeEventListener('mousemove', dragTextbox);
-                });
-            });
-
-            function dragTextbox(e) {
-                textbox.style.left = e.clientX - offsetX + 'px';
-                textbox.style.top = e.clientY - offsetY + 'px';
+                // Enable download button
+                downloadButton.style.display = 'block';
+                downloadButton.dataset.coordinates = coordinatesText;
             }
         }
 
-        function downloadImage() {
-            let canvas = document.createElement('canvas');
-            canvas.width = imageElement.width;
-            canvas.height = imageElement.height;
-            let context = canvas.getContext('2d');
-            context.drawImage(imageElement, 0, 0);
+        function updateSelectionBox() {
+            const minX = Math.min(startX, endX);
+            const minY = Math.min(startY, endY);
+            const width = Math.abs(startX - endX);
+            const height = Math.abs(startY - endY);
 
-            textboxes.forEach((textbox) => {
-                context.font = '14px Arial';
-                context.fillStyle = 'black';
-                context.fillText(textbox.element.value, textbox.x, textbox.y);
-            });
+            selectionBox.style.left = minX + 'px';
+            selectionBox.style.top = minY + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+            selectionBox.style.display = 'block';
+        }
 
-            let downloadLink = document.createElement('a');
-            downloadLink.href = canvas.toDataURL('image/png');
-            downloadLink.download = 'edited_image.png';
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
+        function downloadCoordinates() {
+            const coordinates = downloadButton.dataset.coordinates;
+            const blob = new Blob([coordinates], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'coordinates.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function addTextbox() {
+            const textbox = document.createElement('textarea');
+            textbox.className = 'textbox';
+            textbox.id = `textbox${textboxCount}`;
+            textbox.placeholder = 'Enter text';
+            textbox.style.left = selectionBox.style.left;
+            textbox.style.top = selectionBox.style.top;
+            textbox.style.width = selectionBox.style.width;
+            textbox.style.height = selectionBox.style.height;
+
+            document.getElementById('uploadedImageContainer').appendChild(textbox);
+            textboxCount++;
         }
     </script>
+    
+    <button onclick="addTextbox()">Add Textbox</button>
 </body>
 </html>
