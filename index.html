@@ -9,73 +9,140 @@
             position: relative;
         }
 
-        #selected-area {
+        #selection-box {
             border: 2px dashed red;
             position: absolute;
-            pointer-events: none;
+            display: none;
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <h1>Image Area Selector</h1>
 
-    <input type="file" id="imageInput" accept="image/*" onchange="loadImage()">
+    <input type="file" id="imageInput" accept="image/*">
     
     <div id="image-container">
-        <canvas id="imageCanvas"></canvas>
-        <div id="selected-area"></div>
+        <img id="selectedImage" alt="Selected Image">
+        <div id="selection-box"></div>
     </div>
 
-    <script>
-        let imageCanvas = document.getElementById('imageCanvas');
-        let selectedArea = document.getElementById('selected-area');
-        let startX, startY, endX, endY;
+    <table id="dimensionsTable">
+        <thead>
+            <tr>
+                <th>X-axis</th>
+                <th>Y-axis</th>
+                <th>Width</th>
+                <th>Height</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- The selected dimensions will be added here dynamically -->
+        </tbody>
+    </table>
 
-        function loadImage() {
-            let input = document.getElementById('imageInput');
-            let file = input.files[0];
-            
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const selectedImage = document.getElementById('selectedImage');
+        const selectionBox = document.getElementById('selection-box');
+        const dimensionsTable = document.getElementById('dimensionsTable').getElementsByTagName('tbody')[0];
+
+        imageInput.addEventListener('change', handleImageUpload);
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+
             if (file) {
-                let reader = new FileReader();
+                const reader = new FileReader();
 
                 reader.onload = function (e) {
-                    let img = new Image();
-                    img.onload = function () {
-                        imageCanvas.width = img.width;
-                        imageCanvas.height = img.height;
-                        imageCanvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+                    selectedImage.src = e.target.result;
+                    selectedImage.onload = function () {
+                        initializeImageSelection();
                     };
-                    img.src = e.target.result;
                 };
 
                 reader.readAsDataURL(file);
             }
         }
 
-        imageCanvas.addEventListener('mousedown', (e) => {
-            startX = e.clientX - imageCanvas.getBoundingClientRect().left;
-            startY = e.clientY - imageCanvas.getBoundingClientRect().top;
+        function initializeImageSelection() {
+            selectedImage.style.cursor = 'crosshair';
 
-            selectedArea.style.left = startX + 'px';
-            selectedArea.style.top = startY + 'px';
-            selectedArea.style.width = '0';
-            selectedArea.style.height = '0';
-            selectedArea.style.display = 'block';
-        });
+            selectedImage.addEventListener('mousedown', startSelection);
+            selectedImage.addEventListener('mousemove', updateSelection);
+            selectedImage.addEventListener('mouseup', endSelection);
+        }
 
-        document.addEventListener('mousemove', (e) => {
-            if (startX !== undefined) {
-                endX = e.clientX - imageCanvas.getBoundingClientRect().left;
-                endY = e.clientY - imageCanvas.getBoundingClientRect().top;
+        let startX, startY;
 
-                selectedArea.style.width = endX - startX + 'px';
-                selectedArea.style.height = endY - startY + 'px';
-            }
-        });
+        function startSelection(event) {
+            startX = event.clientX - selectedImage.offsetLeft;
+            startY = event.clientY - selectedImage.offsetTop;
 
-        document.addEventListener('mouseup', () => {
-            startX = undefined;
-        });
+            selectionBox.style.width = '0';
+            selectionBox.style.height = '0';
+            selectionBox.style.left = startX + 'px';
+            selectionBox.style.top = startY + 'px';
+            selectionBox.style.display = 'block';
+
+            selectedImage.removeEventListener('mousemove', updateSelection);
+            selectedImage.addEventListener('mousemove', updateSelection);
+        }
+
+        function updateSelection(event) {
+            const currentX = event.clientX - selectedImage.offsetLeft;
+            const currentY = event.clientY - selectedImage.offsetTop;
+
+            const width = currentX - startX;
+            const height = currentY - startY;
+
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+        }
+
+        function endSelection() {
+            const width = parseInt(selectionBox.style.width);
+            const height = parseInt(selectionBox.style.height);
+
+            const x = startX;
+            const y = startY;
+
+            // Add the selected dimensions to the table
+            addDimensionsToTable(x, y, width, height);
+
+            // Reset the selection box
+            selectionBox.style.width = '0';
+            selectionBox.style.height = '0';
+            selectionBox.style.display = 'none';
+
+            selectedImage.removeEventListener('mousemove', updateSelection);
+        }
+
+        function addDimensionsToTable(x, y, width, height) {
+            const newRow = dimensionsTable.insertRow();
+
+            const cellX = newRow.insertCell(0);
+            const cellY = newRow.insertCell(1);
+            const cellWidth = newRow.insertCell(2);
+            const cellHeight = newRow.insertCell(3);
+
+            cellX.innerHTML = x;
+            cellY.innerHTML = y;
+            cellWidth.innerHTML = width;
+            cellHeight.innerHTML = height;
+        }
     </script>
 </body>
 </html>
