@@ -1,34 +1,85 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Generator</title>
-</head>
-<body>
-    <h1>Certificate Generator</h1>
+Creating a webpage that allows users to select an area of an image with a cursor involves HTML, CSS, and JavaScript. Here's a simple example using the HTML `<canvas>` element and JavaScript to handle the selection:
+
+    ```html
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Image Area Selection</title>
+        <style>
+            #canvasContainer {
+                position: relative;
+                display: inline-block;
+            }
     
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="certificateImage">Upload Certificate Image:</label>
-        <input type="file" id="certificateImage" accept="image/*" required><br>
-
-        <label for="excelSheet">Upload Excel Sheet:</label>
-        <input type="file" id="excelSheet" accept=".xlsx, .xls" required><br>
-
-        <label for="namePlacement">Select Name Placement Area:</label>
-        <input type="text" id="namePlacement" placeholder="e.g., x:100, y:150" required><br>
-
-        <button type="button" onclick="generateCertificates()">Generate Certificates</button>
-    </form>
-
-    <div id="result"></div>
-
-    <script>
-        function generateCertificates() {
-            // Add JavaScript logic to handle file uploads and interact with the backend.
-            // This could involve using FormData to send files to the server.
-            // Display the result on the page.
-        }
-    </script>
-</body>
-</html>
+            #imageCanvas {
+                border: 1px solid #ccc;
+            }
+    
+            #selectionBox {
+                position: absolute;
+                border: 2px dashed #000;
+                background-color: rgba(255, 255, 255, 0.5);
+                pointer-events: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Image Area Selection</h1>
+    
+        <div id="canvasContainer">
+            <canvas id="imageCanvas" width="600" height="400"></canvas>
+            <div id="selectionBox"></div>
+        </div>
+    
+        <script>
+            // Initialize variables
+            const canvas = document.getElementById('imageCanvas');
+            const context = canvas.getContext('2d');
+            const selectionBox = document.getElementById('selectionBox');
+            let isDragging = false;
+            let startX, startY, endX, endY;
+    
+            // Load image
+            const image = new Image();
+            image.src = 'your_image_url.jpg'; // Replace with your image URL
+            image.onload = function () {
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            };
+    
+            // Event listeners
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX - canvas.offsetLeft;
+                startY = e.clientY - canvas.offsetTop;
+            });
+    
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    endX = e.clientX - canvas.offsetLeft;
+                    endY = e.clientY - canvas.offsetTop;
+    
+                    drawSelectionBox();
+                }
+            });
+    
+            canvas.addEventListener('mouseup', () => {
+                isDragging = false;
+                // Add any additional logic you need when the selection is complete
+            });
+    
+            // Draw selection box on the canvas
+            function drawSelectionBox() {
+                const width = endX - startX;
+                const height = endY - startY;
+    
+                selectionBox.style.width = `${Math.abs(width)}px`;
+                selectionBox.style.height = `${Math.abs(height)}px`;
+                selectionBox.style.left = `${width > 0 ? startX : endX}px`;
+                selectionBox.style.top = `${height > 0 ? startY : endY}px`;
+            }
+        </script>
+    </body>
+    </html>
+    
