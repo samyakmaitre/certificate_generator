@@ -3,33 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image and Text Editor</title>
+    <title>Image Annotation</title>
+    <style>
+        #imageContainer {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #selectedArea {
+            border: 2px solid red;
+            position: absolute;
+            display: none;
+        }
+
+        #textOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h1>Image and Text Editor</h1>
-
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="imageUpload">Upload Image:</label>
-        <input type="file" id="imageUpload" accept="image/*" required><br>
-
-        <label for="excelSheet">Upload Excel Sheet:</label>
-        <input type="file" id="excelSheet" accept=".xlsx, .xls" required><br>
-
-        <label for="textToAdd">Text to Add:</label>
-        <input type="text" id="textToAdd" placeholder="Enter text"><br>
-
-        <button type="button" onclick="processImage()">Process Image</button>
-    </form>
+    <h1>Image Annotation</h1>
 
     <div>
-        <img id="editedImage" style="max-width: 100%;" alt="Edited Image">
+        <label for="imageUpload">1. Upload Image:</label>
+        <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
+    </div>
+
+    <div id="imageContainer">
+        <img id="selectedImage" style="max-width: 100%;" alt="Selected Image">
+        <div id="selectedArea"></div>
+        <div id="textOverlay"></div>
+    </div>
+
+    <div>
+        <p>2. Select a rectangle area on the image:</p>
+        <p>Dimensions: <span id="dimensions">-</span></p>
+    </div>
+
+    <div>
+        <p>3. Download CSV File:</p>
+        <button onclick="downloadCSV()">Download CSV</button>
+    </div>
+
+    <div>
+        <p>4. Upload CSV File:</p>
+        <input type="file" id="csvUpload" accept=".csv" onchange="handleCSVUpload(event)">
+    </div>
+
+    <div>
+        <p>5. Type text in the uploaded CSV file:</p>
+        <textarea id="textArea" placeholder="Type your text here"></textarea>
+    </div>
+
+    <div>
+        <p>6. Download Image with Text:</p>
+        <button onclick="downloadImageWithText()">Download Image with Text</button>
     </div>
 
     <script>
-        function processImage() {
-            // Add JavaScript logic to handle file uploads, interact with the backend, and display the edited image.
-            // This could involve using FormData to send files to the server.
-        }
+        // JavaScript functions go here
     </script>
 </body>
 </html>
