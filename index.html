@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Generator</title>
+</head>
+<body>
+    <h1>Certificate Generator</h1>
+    
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="certificateImage">Upload Certificate Image:</label>
+        <input type="file" id="certificateImage" accept="image/*" required><br>
+
+        <label for="excelSheet">Upload Excel Sheet:</label>
+        <input type="file" id="excelSheet" accept=".xlsx, .xls" required><br>
+
+        <label for="namePlacement">Select Name Placement Area:</label>
+        <input type="text" id="namePlacement" placeholder="e.g., x:100, y:150" required><br>
+
+        <button type="button" onclick="generateCertificates()">Generate Certificates</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function generateCertificates() {
+            // Add JavaScript logic to handle file uploads and interact with the backend.
+            // This could involve using FormData to send files to the server.
+            // Display the result on the page.
+        }
+    </script>
+</body>
+</html>
