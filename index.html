@@ -9,16 +9,10 @@
             position: relative;
         }
 
-        #selectedArea {
-            border: 2px solid red;
+        .draggable-textbox {
             position: absolute;
-            display: none;
-        }
-
-        #textBox {
-            position: absolute;
-            display: none;
-            border: 1px solid black;
+            cursor: move;
+            border: 1px solid #ccc;
             background-color: white;
             padding: 5px;
         }
@@ -28,125 +22,105 @@
     <h1>Image Text Editor</h1>
 
     <div>
-        <label for="imageUpload">1. Upload Image:</label>
+        <label for="imageUpload">Upload Image:</label>
         <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
     </div>
 
-    <div>
-        <label for="fontSize">Font Size:</label>
-        <input type="number" id="fontSize" value="20" min="1" onchange="changeFontSize(event)">
-    </div>
-
-    <div>
-        <label for="fontStyle">Font Style:</label>
-        <select id="fontStyle" onchange="changeFontStyle(event)">
-            <option value="Arial">Arial</option>
-            <option value="Verdana">Verdana</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <!-- Add more font options as needed -->
-        </select>
-    </div>
-
     <div id="imageContainer">
-        <img id="selectedImage" style="max-width: 100%;" alt="Selected Image">
-        <div id="selectedArea"></div>
-        <div id="textBox" contenteditable="true"></div>
+        <img id="uploadedImage" style="max-width: 100%;" alt="Uploaded Image">
     </div>
 
-    <button onclick="downloadImage()">4. Download Image</button>
+    <div id="textEditor">
+        <label for="textInput">Enter Text:</label>
+        <input type="text" id="textInput">
+        <button onclick="addTextbox()">Add Textbox</button>
+        <button onclick="downloadImage()">Download Image</button>
+    </div>
 
     <script>
-        let imageElement = document.getElementById('selectedImage');
-        let selectedAreaElement = document.getElementById('selectedArea');
-        let textBoxElement = document.getElementById('textBox');
-        let fontSizeElement = document.getElementById('fontSize');
-        let fontStyleElement = document.getElementById('fontStyle');
+        let imageContainer = document.getElementById('imageContainer');
+        let textEditor = document.getElementById('textEditor');
+        let uploadedImage = document.getElementById('uploadedImage');
 
         function handleImageUpload(event) {
             let file = event.target.files[0];
             if (file) {
                 let reader = new FileReader();
                 reader.onload = function (e) {
-                    imageElement.src = e.target.result;
-                    imageElement.onload = function () {
-                        initializeImageEditor();
+                    uploadedImage.src = e.target.result;
+                    uploadedImage.onload = function () {
+                        textEditor.style.display = 'block';
                     };
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function initializeImageEditor() {
-            imageElement.style.cursor = 'crosshair';
-            imageElement.addEventListener('mousedown', startSelection);
+        function addTextbox() {
+            let textbox = document.createElement('div');
+            textbox.classList.add('draggable-textbox');
+            textbox.contentEditable = true;
+            textbox.addEventListener('mousedown', startDragging);
+            imageContainer.appendChild(textbox);
         }
 
-        function startSelection(e) {
-            e.preventDefault();
+        function startDragging(e) {
+            let offsetX = e.clientX - e.target.getBoundingClientRect().left;
+            let offsetY = e.clientY - e.target.getBoundingClientRect().top;
 
-            let startX = e.clientX;
-            let startY = e.clientY;
+            function dragMove(moveEvent) {
+                let x = moveEvent.clientX - offsetX;
+                let y = moveEvent.clientY - offsetY;
 
-            document.addEventListener('mousemove', updateSelection);
-            document.addEventListener('mouseup', endSelection);
-
-            function updateSelection(e) {
-                let width = e.clientX - startX;
-                let height = e.clientY - startY;
-
-                selectedAreaElement.style.width = Math.abs(width) + 'px';
-                selectedAreaElement.style.height = Math.abs(height) + 'px';
-                selectedAreaElement.style.left = (width > 0 ? startX : e.clientX) + 'px';
-                selectedAreaElement.style.top = (height > 0 ? startY : e.clientY) + 'px';
-
-                selectedAreaElement.style.display = 'block';
-
-                // Position the text box
-                textBoxElement.style.left = selectedAreaElement.style.left;
-                textBoxElement.style.top = selectedAreaElement.style.top;
-                textBoxElement.style.width = selectedAreaElement.style.width;
-                textBoxElement.style.height = selectedAreaElement.style.height;
-                textBoxElement.style.display = 'block';
+                e.target.style.left = x + 'px';
+                e.target.style.top = y + 'px';
             }
 
-            function endSelection(e) {
-                document.removeEventListener('mousemove', updateSelection);
-                document.removeEventListener('mouseup', endSelection);
+            function dragEnd() {
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
             }
+
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('mouseup', dragEnd);
         }
 
         function downloadImage() {
-            let canvas = document.createElement('canvas');
-            let context = canvas.getContext('2d');
+            // Create a clone of the image container with textboxes
+            let cloneContainer = imageContainer.cloneNode(true);
+            let textboxes = cloneContainer.getElementsByClassName('draggable-textbox');
 
-            canvas.width = imageElement.width;
-            canvas.height = imageElement.height;
+            // Position textboxes relative to the image
+            for (let i = 0; i < textboxes.length; i++) {
+                let textbox = textboxes[i];
+                let rect = textbox.getBoundingClientRect();
+                let imageRect = uploadedImage.getBoundingClientRect();
 
-            context.drawImage(imageElement, 0, 0);
+                let x = rect.left - imageRect.left;
+                let y = rect.top - imageRect.top;
 
-            let text = textBoxElement.innerText;
-            context.font = `${fontSizeElement.value}px ${fontStyleElement.value}`;
-            context.fillStyle = 'black';
-            context.fillText(text, parseInt(textBoxElement.style.left, 10), parseInt(textBoxElement.style.top, 10) + parseInt(fontSizeElement.value, 10));
+                textbox.style.left = x + 'px';
+                textbox.style.top = y + 'px';
 
-            let filename = text || 'image';
-            let link = document.createElement('a');
-            link.href = canvas.toDataURL();
-            link.download = `${filename}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+                // Remove dragging functionality for the cloned textboxes
+                textbox.removeEventListener('mousedown', startDragging);
+            }
 
-        function changeFontSize(event) {
-            let fontSize = event.target.value;
-            textBoxElement.style.fontSize = `${fontSize}px`;
-        }
+            // Convert the HTML content to an image
+            html2canvas(cloneContainer).then(function(canvas) {
+                // Convert the canvas to a data URL
+                let imageURL = canvas.toDataURL('image/png');
 
-        function changeFontStyle(event) {
-            let fontStyle = event.target.value;
-            textBoxElement.style.fontFamily = fontStyle;
+                // Create a link element and trigger a download
+                let link = document.createElement('a');
+                link.href = imageURL;
+                link.download = 'edited_image.png';
+                link.click();
+            });
         }
     </script>
+
+    <!-- Include the html2canvas library -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
 </html>
