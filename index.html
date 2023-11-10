@@ -3,82 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Area Selection</title>
+    <title>Image Area Selector</title>
     <style>
         #image-container {
             position: relative;
-            width: 500px;
-            height: 500px;
         }
 
         #selected-area {
+            border: 2px dashed red;
             position: absolute;
-            border: 2px solid red;
             pointer-events: none;
         }
     </style>
 </head>
 <body>
-    <h1>Image Area Selection</h1>
-    
+    <h1>Image Area Selector</h1>
+
     <input type="file" id="imageInput" accept="image/*" onchange="loadImage()">
     
     <div id="image-container">
-        <img id="uploadedImage" alt="Uploaded Image">
+        <canvas id="imageCanvas"></canvas>
         <div id="selected-area"></div>
     </div>
 
     <script>
+        let imageCanvas = document.getElementById('imageCanvas');
+        let selectedArea = document.getElementById('selected-area');
+        let startX, startY, endX, endY;
+
         function loadImage() {
-            var input = document.getElementById('imageInput');
-            var imageContainer = document.getElementById('image-container');
-            var selectedArea = document.getElementById('selected-area');
+            let input = document.getElementById('imageInput');
+            let file = input.files[0];
             
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
+            if (file) {
+                let reader = new FileReader();
 
                 reader.onload = function (e) {
-                    document.getElementById('uploadedImage').setAttribute('src', e.target.result);
+                    let img = new Image();
+                    img.onload = function () {
+                        imageCanvas.width = img.width;
+                        imageCanvas.height = img.height;
+                        imageCanvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+                    };
+                    img.src = e.target.result;
                 };
 
-                reader.readAsDataURL(input.files[0]);
-
-                imageContainer.addEventListener('mousemove', function (e) {
-                    var rect = imageContainer.getBoundingClientRect();
-                    var x = e.clientX - rect.left;
-                    var y = e.clientY - rect.top;
-
-                    selectedArea.style.left = x + 'px';
-                    selectedArea.style.top = y + 'px';
-                });
-
-                imageContainer.addEventListener('mouseleave', function () {
-                    selectedArea.style.width = '0';
-                    selectedArea.style.height = '0';
-                });
-
-                imageContainer.addEventListener('mousedown', function (e) {
-                    var rect = imageContainer.getBoundingClientRect();
-                    var startX = e.clientX - rect.left;
-                    var startY = e.clientY - rect.top;
-
-                    imageContainer.addEventListener('mousemove', function (e) {
-                        var currentX = e.clientX - rect.left;
-                        var currentY = e.clientY - rect.top;
-
-                        var width = currentX - startX;
-                        var height = currentY - startY;
-
-                        selectedArea.style.width = width + 'px';
-                        selectedArea.style.height = height + 'px';
-                    });
-
-                    imageContainer.addEventListener('mouseup', function () {
-                        imageContainer.removeEventListener('mousemove', function () {});
-                    });
-                });
+                reader.readAsDataURL(file);
             }
         }
+
+        imageCanvas.addEventListener('mousedown', (e) => {
+            startX = e.clientX - imageCanvas.getBoundingClientRect().left;
+            startY = e.clientY - imageCanvas.getBoundingClientRect().top;
+
+            selectedArea.style.left = startX + 'px';
+            selectedArea.style.top = startY + 'px';
+            selectedArea.style.width = '0';
+            selectedArea.style.height = '0';
+            selectedArea.style.display = 'block';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (startX !== undefined) {
+                endX = e.clientX - imageCanvas.getBoundingClientRect().left;
+                endY = e.clientY - imageCanvas.getBoundingClientRect().top;
+
+                selectedArea.style.width = endX - startX + 'px';
+                selectedArea.style.height = endY - startY + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            startX = undefined;
+        });
     </script>
 </body>
 </html>
