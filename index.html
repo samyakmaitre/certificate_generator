@@ -3,143 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Editor</title>
+    <title>Image Text Editor</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
-
         #imageContainer {
-            margin-top: 20px;
             position: relative;
-        }
-
-        #uploadedImage {
-            max-width: 100%;
-            cursor: crosshair;
         }
 
         .textbox {
             position: absolute;
             border: 1px solid black;
-            background-color: #FFFFE0;
-            resize: both;
-            overflow: auto;
-        }
-
-        #downloadButton {
-            display: block;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: white;
+            cursor: move;
         }
     </style>
 </head>
 <body>
-    <h1>Image Editor</h1>
+    <h1>Image Text Editor</h1>
 
     <div>
-        <label for="imageUpload">Upload Image:</label>
-        <input type="file" id="imageUpload" accept="image/*" onchange="displayImage(event)">
+        <label for="imageUpload">1. Upload Image:</label>
+        <input type="file" id="imageUpload" accept="image/*" onchange="handleImageUpload(event)">
     </div>
 
     <div id="imageContainer">
-        <img id="uploadedImage" alt="Uploaded Image" onclick="startSelection(event)">
+        <img id="editedImage" style="max-width: 100%;" alt="Edited Image">
     </div>
 
-    <button id="downloadButton" onclick="downloadImage()">Download Image</button>
+    <button onclick="downloadImage()">4. Download Image</button>
 
     <script>
-        let startX, startY, endX, endY;
-        let isSelecting = false;
-        let textboxCount = 0;
+        let imageElement = document.getElementById('editedImage');
+        let imageContainer = document.getElementById('imageContainer');
+        let textboxes = [];
 
-        const uploadedImage = document.getElementById('uploadedImage');
-        const imageContainer = document.getElementById('imageContainer');
-        const downloadButton = document.getElementById('downloadButton');
-
-        function displayImage(event) {
-            const file = event.target.files[0];
-
+        function handleImageUpload(event) {
+            let file = event.target.files[0];
             if (file) {
-                const reader = new FileReader();
-
+                let reader = new FileReader();
                 reader.onload = function (e) {
-                    uploadedImage.src = e.target.result;
-                    uploadedImage.style.width = '100%';
+                    imageElement.src = e.target.result;
+                    imageElement.onload = function () {
+                        initializeImageEditor();
+                    };
                 };
-
                 reader.readAsDataURL(file);
             }
         }
 
-        function startSelection(event) {
-            startX = event.clientX - uploadedImage.getBoundingClientRect().left;
-            startY = event.clientY - uploadedImage.getBoundingClientRect().top;
-            isSelecting = true;
+        function initializeImageEditor() {
+            imageContainer.style.width = imageElement.width + 'px';
+            imageContainer.style.height = imageElement.height + 'px';
 
-            document.addEventListener('mousemove', updateSelection);
-            document.addEventListener('mouseup', endSelection);
+            imageElement.style.cursor = 'crosshair';
+            imageElement.addEventListener('mousedown', startTextboxCreation);
         }
 
-        function updateSelection(event) {
-            if (!isSelecting) return;
+        function startTextboxCreation(e) {
+            e.preventDefault();
 
-            endX = event.clientX - uploadedImage.getBoundingClientRect().left;
-            endY = event.clientY - uploadedImage.getBoundingClientRect().top;
+            let startX = e.clientX;
+            let startY = e.clientY;
 
-            const minX = Math.min(startX, endX);
-            const minY = Math.min(startY, endY);
-            const width = Math.abs(startX - endX);
-            const height = Math.abs(startY - endY);
-
-            const textbox = document.createElement('textarea');
+            let textbox = document.createElement('textarea');
             textbox.className = 'textbox';
-            textbox.id = `textbox${textboxCount}`;
-            textbox.placeholder = 'Enter text';
-            textbox.style.left = minX + 'px';
-            textbox.style.top = minY + 'px';
-            textbox.style.width = width + 'px';
-            textbox.style.height = height + 'px';
+            textbox.style.left = startX + 'px';
+            textbox.style.top = startY + 'px';
 
             imageContainer.appendChild(textbox);
 
-            textboxCount++;
+            textboxes.push({
+                element: textbox,
+                startX,
+                startY
+            });
+
+            document.addEventListener('mousemove', updateTextboxCreation);
+            document.addEventListener('mouseup', endTextboxCreation);
         }
 
-        function endSelection() {
-            isSelecting = false;
-            document.removeEventListener('mousemove', updateSelection);
-            document.removeEventListener('mouseup', endSelection);
+        function updateTextboxCreation(e) {
+            let currentTextbox = textboxes[textboxes.length - 1];
+            let width = e.clientX - currentTextbox.startX;
+            let height = e.clientY - currentTextbox.startY;
+
+            currentTextbox.element.style.width = Math.abs(width) + 'px';
+            currentTextbox.element.style.height = Math.abs(height) + 'px';
+        }
+
+        function endTextboxCreation() {
+            document.removeEventListener('mousemove', updateTextboxCreation);
+            document.removeEventListener('mouseup', endTextboxCreation);
         }
 
         function downloadImage() {
-            const imageWithTextboxes = document.createElement('div');
-            imageWithTextboxes.appendChild(uploadedImage.cloneNode(true));
+            let canvas = document.createElement('canvas');
+            canvas.width = imageElement.width;
+            canvas.height = imageElement.height;
+            let context = canvas.getContext('2d');
+            context.drawImage(imageElement, 0, 0);
 
-            const textboxes = imageWithTextboxes.querySelectorAll('.textbox');
             textboxes.forEach((textbox) => {
-                const clonedTextbox = textbox.cloneNode(true);
-                imageWithTextboxes.appendChild(clonedTextbox);
+                context.font = '14px Arial';
+                context.fillStyle = 'black';
+                context.fillText(textbox.element.value, parseInt(textbox.element.style.left), parseInt(textbox.element.style.top));
             });
 
-            const svgData = new XMLSerializer().serializeToString(imageWithTextboxes);
-            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'image_with_textboxes.svg';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            let downloadLink = document.createElement('a');
+            downloadLink.href = canvas.toDataURL('image/png');
+            downloadLink.download = 'edited_image.png';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
     </script>
 </body>
