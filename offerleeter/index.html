@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Letter Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #offerLetter {
+            width: 794px; /* A4 width in pixels */
+            height: 1123px; /* A4 height in pixels */
+            border: 2px solid black;
+            padding: 20px;
+            box-sizing: border-box;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="offerLetter">
+        <h2>Offer Letter</h2>
+        <label for="name">Applicant Name:</label>
+        <input type="text" id="name" placeholder="Enter applicant name">
+
+        <button onclick="generateOfferLetter()">Generate Offer Letter</button>
+    </div>
+
+    <script>
+        function generateOfferLetter() {
+            const name = document.getElementById('name').value.trim();
+
+            if (!name) {
+                alert('Please enter the applicant name.');
+                return;
+            }
+
+            const content = ``;
+
+            const offerLetter = document.createElement('div');
+            offerLetter.innerHTML = content;
+
+            const pdfOptions = {
+                margin: 20,
+                filename: `${name}_OL.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf(offerLetter, pdfOptions);
+        }
+    </script>
+
+    <script src="https://raw.githack.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+</body>
+</html>
