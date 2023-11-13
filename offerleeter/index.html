@@ -13,7 +13,7 @@
         #offerLetter {
             width: 794px; /* A4 width in pixels */
             height: 1123px; /* A4 height in pixels */
-            border: 2px solid black;
+            border: 2px solid black; /* Add a border */
             padding: 20px;
             box-sizing: border-box;
             margin: 0 auto;
@@ -27,6 +27,13 @@
         input {
             width: 100%;
             padding: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
             margin-bottom: 20px;
             box-sizing: border-box;
         }
@@ -47,27 +54,34 @@
         <label for="name">Applicant Name:</label>
         <input type="text" id="name" placeholder="Enter applicant name">
 
+        <label for="congratulations">Congratulatory Message:</label>
+        <textarea id="congratulations" placeholder="Enter congratulatory message"></textarea>
+
+        <label for="additionalContent">Additional Content:</label>
+        <textarea id="additionalContent" placeholder="Enter additional content"></textarea>
+
         <button onclick="generateOfferLetter()">Generate Offer Letter</button>
     </div>
 
     <script>
         function generateOfferLetter() {
             const name = document.getElementById('name').value.trim();
+            const congratulations = document.getElementById('congratulations').value.trim();
+            const additionalContent = document.getElementById('additionalContent').value.trim();
 
-            if (!name) {
-                alert('Please enter the applicant name.');
+            if (!name || !congratulations) {
+                alert('Please enter both the applicant name and congratulatory message.');
                 return;
             }
 
             const content = `
                 <div style="text-align: center;">
-                    <img src="img.png" alt="Company Logo" style="max-width: 100%; height: 100px; margin-top: 20px; display: block; margin-left: auto; margin-right: auto;">
+                    <img src="img.png" alt="Company Logo" style="max-width: 100%; height: 100px; padding-top: -20px; display: block; margin-left: auto; margin-right: auto;">
                 </div>
                 <div style="text-align: center;"><h3><hr>INTERNSHIP OFFER LETTER<hr></h3></div>
                 <h4>Dear ${name},</h4>
-                <p>Congratulations! We are pleased to offer you a position at our company.</p>
-                <!-- Add more content as needed -->
-
+                <p>${congratulations}</p>
+                <p>${additionalContent}</p>
                 <p>Best regards,</p>
                 <p>Your Company Name</p>
             `;
