@@ -31,6 +31,13 @@
             box-sizing: border-box;
         }
 
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
         button {
             padding: 10px;
             background-color: #4caf50;
@@ -47,15 +54,27 @@
         <label for="name">Applicant Name:</label>
         <input type="text" id="name" placeholder="Enter applicant name">
 
+        <label for="congratulations">Congratulatory Message:</label>
+        <textarea id="congratulations" placeholder="Enter congratulatory message"></textarea>
+
+        <label for="closetatement">Closing Statement:</label>
+        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc.">
+        
+        <label for="company">Your Company Name:</label>
+        <input type="text" id="company" placeholder="Enter your company name">
+
         <button onclick="generateOfferLetter()">Generate Offer Letter</button>
     </div>
 
     <script>
         function generateOfferLetter() {
             const name = document.getElementById('name').value.trim();
+            const congratulations = document.getElementById('congratulations').value.trim();
+            const closetatement = document.getElementById('closetatement').value.trim();
+            const company = document.getElementById('company').value.trim();
 
-            if (!name) {
-                alert('Please enter the applicant name.');
+            if (!name || !congratulations || !company) {
+                alert('Please fill in all fields.');
                 return;
             }
 
@@ -65,11 +84,11 @@
                 </div>
                 <div style="text-align: center;"><h3><hr>INTERNSHIP OFFER LETTER<hr></h3></div>
                 <h4>Dear ${name},</h4>
-                <p>Congratulations! We are pleased to offer you a position at our company.</p>
+                <p>${congratulations}</p>
                 <!-- Add more content as needed -->
 
                 <p>Best regards,</p>
-                <p>Your Company Name</p>
+                <p>${company}</p>
             `;
 
             const offerLetter = document.createElement('div');
