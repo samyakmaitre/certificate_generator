@@ -63,6 +63,9 @@
         <label for="company">Your Company Name:</label>
         <input type="text" id="company" placeholder="Enter your company name">
 
+        <label for="logo">Upload Company Logo:</label>
+        <input type="file" id="logo" accept="image/*">
+
         <button onclick="generateOfferLetter()">Generate Offer Letter</button>
     </div>
 
@@ -72,22 +75,25 @@
             const congratulations = document.getElementById('congratulations').value.trim();
             const closetatement = document.getElementById('closetatement').value.trim();
             const company = document.getElementById('company').value.trim();
-
+            const logoInput = document.getElementById('logo');
+            
             if (!name || !congratulations || !company) {
                 alert('Please fill in all fields.');
                 return;
             }
 
+            const logo = logoInput.files[0]; // Get the uploaded logo file
+
             const content = `
                 <div style="text-align: center;">
-                    <img src="img.png" alt="Company Logo" style="max-width: 100%; height: 100px; padding-top: -20px; display: block; margin-left: auto; margin-right: auto;">
+                    <img src="${logo ? URL.createObjectURL(logo) : 'img.png'}" alt="Company Logo" style="width: 100%; height: 100px; padding-top: -20px; display: block; margin-left: auto; margin-right: auto;">
                 </div>
                 <div style="text-align: center;"><h3><hr>INTERNSHIP OFFER LETTER<hr></h3></div>
                 <h4>Dear ${name},</h4>
                 <p>${congratulations}</p>
                 <!-- Add more content as needed -->
 
-                <p>Best regards,</p>
+                <p>${closetatement},</p>
                 <p>${company}</p>
             `;
 
