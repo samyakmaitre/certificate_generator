@@ -49,68 +49,80 @@
     </style>
 </head>
 <body>
+    
     <div id="offerLetter">
-        <h2>Offer Letter</h2>
-        <label for="name">Applicant Name:</label>
-        <input type="text" id="name" placeholder="Enter applicant name" ></input>
+        
+        <h2>Mass Offer Letter Generator</h2>
+        <!-- Rest of your form remains unchanged -->
+        <!-- Input element for file upload -->
+        <label for="logo">Company Logo&nbsp;(Dim:6912 x 1363px) :</label>
+        <input type="file" id="logo" accept="image/*">
 
-        <label for="congratulations">Letter body:</label>
-        <textarea id="congratulations" placeholder="Enter congratulatory message">
-            We are pleased to extend an offer of employment for the position of [Job Title] at [Your Company Name]. We were highly impressed with your qualifications and experience, and we believe that your skills will contribute significantly to our team.
+        <label for="name">Candidate's Name:</label>
+        <input type="text" id="name" placeholder="Enter applicant name" value="kedj" ></input>
 
-            [Job Title] is a [full-time/part-time] position, and your expected start date will be [start date]. The details of your employment are as follows:
-            
-            Position: [Job Title]
-            Department: [Department]
-            Reports to: [Supervisor/Manager]
-            Start Date: [Start Date]
-            Location: [Office Location]
-            Salary: [Annual Salary]
-            Work Hours: [Number of Hours] per week
-            Benefits: [Include details of any benefits such as health insurance, retirement plans, etc.]
-            Vacation: [Include details about the vacation policy]
-            Probationary Period: [If applicable, mention the duration of the probationary period]
-            Responsibilities:
-            [List key responsibilities and duties associated with the position]
-            
-            Qualifications:
-            [List any specific qualifications or requirements for the position]
-            
-            Please note that this offer is contingent upon the successful completion of [any necessary background checks, drug tests, or other pre-employment requirements]. You will also be required to provide documentation to verify your eligibility for employment in [Country].
-            
-            To accept this offer, please sign and return a copy of this letter by [date], indicating your acceptance of the terms and conditions outlined herein. If you have any questions or concerns, please feel free to contact [Your Contact Person] at [Your Contact Person's Email/Phone].
-            
-            We look forward to welcoming you to the [Your Company Name] team and are excited about the contributions
-            we know you will make.</textarea>
+        
+        .+
+            As quoted by Colin Powell “Success is not a matter of luck, it’s a matter of
+preparation and hard work.”
+On behalf of the TEDx Chapter of VIT Bhopal, we would like to extend our sincere congratulations on getting selected as the Core Team Member in the Production and Design Team of the TEDx Chapter. We welcome you to join this initiative which aims to research and discover “ideas worth spreading” and bring the spirit of TED to local communities around the globe through TEDx events.
+
+Your application stood out from the other overwhelming responses we received due to your capabilities to handle pressure, execution of your ideas, and expertise in the respective field.
+Your dedication and enthusiasm to join the initiative were the key factors to make us believe that you are the right choice for the position and led to this remarkable achievement.
+
+We are delighted to have you on board. We hope that we all can work together to help the chapter to achieve its objectives and at the same time enjoy the process.
+
+The journey of thousand miles begins with a single step. With this being said, we look forward to your dedicated involvement in the chapter activities. Let’s take this emerging chapter to further heights and be the change we want to see in the world.</textarea>
 
         <label for="closetatement">Closing Statement:</label>
-        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc.">
+        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc." value="bwestg">
         
-        <label for="company">Your Company Name:</label>
-        <input type="text" id="company" placeholder="Enter your company name">
+        <label for="company">Your Club Name:</label>
+        <input type="text" id="company" placeholder="Enter Your Club name" value="CWC">
 
         <button onclick="generateOfferLetter()">Generate Offer Letter</button>
     </div>
 
     <script>
-        function generateOfferLetter() {
+         function generateOfferLetter() {
             const name = document.getElementById('name').value.trim();
-            const congratulations = document.getElementById('congratulations').value.trim();
+            const body = document.getElementById('body').value.trim();
             const closetatement = document.getElementById('closetatement').value.trim();
             const company = document.getElementById('company').value.trim();
 
-            if (!name || !congratulations || !company) {
+            if (!name || !body || !company) {
                 alert('Please fill in all fields.');
                 return;
             }
 
+            // Get the selected image file
+            const logoInput = document.getElementById('logo');
+            const logoFile = logoInput.files[0];
+
+            let logoSrc = 'img.png'; // Default image source
+
+            if (logoFile) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    logoSrc = e.target.result;
+                    generatePDF(name, body, closetatement, company, logoSrc);
+                };
+
+                reader.readAsDataURL(logoFile);
+            } else {
+                generatePDF(name, body, closetatement, company, logoSrc);
+            }
+        }
+
+        function generatePDF(name, body, closetatement, company, logoSrc) {
             const content = `
                 <div style="text-align: center;">
-                    <img src="img.png" alt="Company Logo" style="width: 100%; height: 100px; padding-top: -20px; display: block; margin-left: auto; margin-right: auto;">
+                    <img src="${logoSrc}" alt="Company Logo" style="width: 100%; height: 100px; padding-top: -20px; display: block; margin-left: auto; margin-right: auto;">
                 </div>
-                <div style="text-align: center;"><h3><hr>INTERNSHIP OFFER LETTER<hr></h3></div>
+                <div style="text-align: center;"><h3><hr>Letter of Appointment<hr></h3></div>
                 <h4>Dear ${name},</h4>
-                <p>${congratulations}</p>
+                <p>${body}</p>
                 <!-- Add more content as needed -->
 
                 <p>${closetatement},</p>
@@ -122,7 +134,7 @@
 
             const pdfOptions = {
                 margin: 20,
-                filename: `${name}_OL.pdf`,
+                filename: `${name}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
