@@ -63,14 +63,12 @@
 
         <label for="name">Candidate Name:</label>
         <input type="text" id="name" placeholder="Enter applicant name" value="kedj" ></input>
+        <label for="body">Body:</label>
+        <input type="body" id="name" placeholder="write the body" value="kedj" ></input>
 
         <label for="body">Letter body:</label>
-        <div id="body" contenteditable="true">
-            <p>As quoted by Colin Powell “Success is not a matter of luck, it’s a matter of preparation and hard work.”</p>
-            <p>On behalf of the TEDx Chapter of VIT Bhopal, we would like to extend our sincere congratulations on getting selected as the Core Team Member in the Production and Design Team of the TEDx Chapter. We welcome you to join this initiative which aims to research and discover “ideas worth spreading” and bring the spirit of TED to local communities around the globe through TEDx events.</p>
-            <p>Your application stood out from the other overwhelming responses we received due to your capabilities to handle pressure, execution of your ideas, and expertise in the respective field. Your dedication and enthusiasm to join the initiative were the key factors to make us believe that you are the right choice for the position and led to this remarkable achievement.</p>
-            <p>We are delighted to have you on board. We hope that we all can work together to help the chapter to achieve its objectives and at the same time enjoy the process.</p>
-            <p>The journey of thousand miles begins with a single step. With this being said, we look forward to your dedicated involvement in the chapter activities. Let’s take this emerging chapter to further heights and be the change we want to see in the world.</p>
+        <div id="body" value="fkc gkgfbbjkg">
+            
         </div>
 
         <label for="closetatement">Closing Statement:</label>
@@ -123,16 +121,17 @@
                 <h4>Dear ${name},</h4>
                 <div>${body}</div>
                 <!-- Add more content as needed -->
-
+                <div>
                 <p>${closetatement},</p>
                 <p>${company}</p>
+                </div>
             `;
 
             const offerLetter = document.createElement('div');
             offerLetter.innerHTML = content;
 
             const pdfOptions = {
-                margin: 0,
+                margin: 10 ,
                 filename: `${name}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
