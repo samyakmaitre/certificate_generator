@@ -7,7 +7,7 @@
     <style>
         body {
             background-image: url(bg.jpg);
-            background-size:cover;
+            background-size: cover;
             background-repeat: no-repeat;
             font-family: Arial, sans-serif;
             margin: 20px;
@@ -17,13 +17,18 @@
         #offerLetter {
             box-shadow: 0px 0px 10px 2px;
             background-color: rgba(242, 244, 244, 0.77);
-            width: 764px; /* A4 width in pixels */
-            height: 1123px; /* A4 height in pixels */
+            max-width: 100%; /* Make the container responsive */
             border: 2px solid black;
             padding: 20px;
             box-sizing: border-box;
             margin: 0 auto;
-            
+        }
+
+        h1 {
+            font-family: cursive;
+            color: #eff4ef;
+            text-align: center;
+            text-shadow: 0px 0px 10px rgb(25, 24, 24);
         }
 
         label {
@@ -31,7 +36,8 @@
             margin-bottom: 10px;
         }
 
-        input {
+        input,
+        textarea {
             border-radius: 15px;
             width: 100%;
             padding: 8px;
@@ -40,15 +46,7 @@
         }
 
         textarea {
-            border-radius: 15px;
-            width: 100%;
-            height: 200px;
-            padding: 8px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            border-color: black;
-            border-width: 2px;
-
+            height: 150px; /* Adjust height for better responsiveness */
         }
 
         button {
@@ -59,24 +57,33 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
+        /* Media query for smaller screens */
+        @media only screen and (max-width: 600px) {
+            #offerLetter {
+                padding: 10px;
+            }
+
+            textarea {
+                height: 100px;
+            }
+        }
     </style>
 </head>
 <body>
-    
     <div id="offerLetter">
-        
-        <h1 style="font-family:cursive; color: #eff4ef; text-align: center; text-shadow: 0px 0px 10px rgb(25, 24, 24);">Mass Offer Letter Generator</h1>
+        <h1>Mass Offer Letter Generator</h1>
         <!-- Rest of your form remains unchanged -->
+
         <!-- Input element for file upload -->
         <label for="logo">Company Logo: (By Default avl.)</label>
         <input type="file" id="logo" accept="image/*">
 
         <label for="name">Applicant Name:</label>
-        <input type="text" id="name" placeholder="Enter applicant name" ></input>
+        <input type="text" id="name" placeholder="Enter applicant name">
 
         <label for="body">Letter body:</label>
-        <textarea id="body" placeholder="Enter body of the letter">
-            We are pleased to extend an offer of employment for the position of [Job Title] at [Your Company Name]. We were highly impressed with your qualifications and experience, and we believe that your skills will contribute significantly to our team.
+        <textarea id="body" placeholder="Enter body of the letter">We are pleased to extend an offer of employment for the position of [Job Title] at [Your Company Name]. We were highly impressed with your qualifications and experience, and we believe that your skills will contribute significantly to our team.
 
             [Job Title] is a [full-time/part-time] position, and your expected start date will be [start date]. The details of your employment are as follows:
             
@@ -104,8 +111,8 @@
             we know you will make.</textarea>
 
         <label for="closetatement">Closing Statement:</label>
-        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc." >
-        
+        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc.">
+
         <label for="company">Your Club Name:</label>
         <input type="text" id="company" placeholder="Enter Club name">
 
@@ -113,7 +120,7 @@
     </div>
 
     <script>
-         function generateOfferLetter() {
+        function generateOfferLetter() {
             const name = document.getElementById('name').value.trim();
             const body = document.getElementById('body').value.trim();
             const closetatement = document.getElementById('closetatement').value.trim();
