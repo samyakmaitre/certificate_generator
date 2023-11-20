@@ -31,14 +31,11 @@
             box-sizing: border-box;
         }
 
-        #body {
+        textarea {
             width: 100%;
-            min-height: 100px;
+            height: 100px;
             margin-bottom: 20px;
             box-sizing: border-box;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
         }
 
         button {
@@ -58,24 +55,46 @@
         <h2>Mass Offer Letter Generator</h2>
         <!-- Rest of your form remains unchanged -->
         <!-- Input element for file upload -->
-        <label for="logo">Company Logo&nbsp;(Dim:6912x1363px) :</label>
+        <label for="logo">Company Logo: (By Default avl.)</label>
         <input type="file" id="logo" accept="image/*">
 
-        <label for="name">Candidate Name:</label>
-        <input type="text" id="name" placeholder="Enter applicant name" value="kedj" ></input>
-        <label for="body">Body:</label>
-        <input type="body" id="name" placeholder="write the body" value="kedj" ></input>
+        <label for="name">Applicant Name:</label>
+        <input type="text" id="name" placeholder="Enter applicant name" ></input>
 
         <label for="body">Letter body:</label>
-        <div id="body" value="fkc gkgfbbjkg">
+        <textarea id="body" placeholder="Enter body of the letter">
+            We are pleased to extend an offer of employment for the position of [Job Title] at [Your Company Name]. We were highly impressed with your qualifications and experience, and we believe that your skills will contribute significantly to our team.
+
+            [Job Title] is a [full-time/part-time] position, and your expected start date will be [start date]. The details of your employment are as follows:
             
-        </div>
+            Position: [Job Title]
+            Department: [Department]
+            Reports to: [Supervisor/Manager]
+            Start Date: [Start Date]
+            Location: [Office Location]
+            Salary: [Annual Salary]
+            Work Hours: [Number of Hours] per week
+            Benefits: [Include details of any benefits such as health insurance, retirement plans, etc.]
+            Vacation: [Include details about the vacation policy]
+            Probationary Period: [If applicable, mention the duration of the probationary period]
+            Responsibilities:
+            [List key responsibilities and duties associated with the position]
+            
+            Qualifications:
+            [List any specific qualifications or requirements for the position]
+            
+            Please note that this offer is contingent upon the successful completion of [any necessary background checks, drug tests, or other pre-employment requirements]. You will also be required to provide documentation to verify your eligibility for employment in [Country].
+            
+            To accept this offer, please sign and return a copy of this letter by [date], indicating your acceptance of the terms and conditions outlined herein. If you have any questions or concerns, please feel free to contact [Your Contact Person] at [Your Contact Person's Email/Phone].
+            
+            We look forward to welcoming you to the [Your Company Name] team and are excited about the contributions
+            we know you will make.</textarea>
 
         <label for="closetatement">Closing Statement:</label>
-        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc." value="bwestg">
+        <input type="text" id="closetatement" placeholder="Best Regards/Thank You/Faithfully/etc." >
         
         <label for="company">Your Club Name:</label>
-        <input type="text" id="company" placeholder="Enter Your Club name" value="CWC">
+        <input type="text" id="company" placeholder="Enter Club name">
 
         <button onclick="generateOfferLetter()">Generate Offer Letter</button>
     </div>
@@ -83,7 +102,7 @@
     <script>
          function generateOfferLetter() {
             const name = document.getElementById('name').value.trim();
-            const body = document.getElementById('body').innerHTML.trim(); // Use innerHTML for contenteditable
+            const body = document.getElementById('body').value.trim();
             const closetatement = document.getElementById('closetatement').value.trim();
             const company = document.getElementById('company').value.trim();
 
@@ -119,19 +138,18 @@
                 </div>
                 <div style="text-align: center;"><h3><hr>Letter of Appointment<hr></h3></div>
                 <h4>Dear ${name},</h4>
-                <div>${body}</div>
+                <p>${body}</p>
                 <!-- Add more content as needed -->
-                <div>
+
                 <p>${closetatement},</p>
                 <p>${company}</p>
-                </div>
             `;
 
             const offerLetter = document.createElement('div');
             offerLetter.innerHTML = content;
 
             const pdfOptions = {
-                margin: 10 ,
+                margin: 20,
                 filename: `${name}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2 },
