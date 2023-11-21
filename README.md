@@ -1,4 +1,4 @@
-# certificate_generator
+# Letter_PDF_generator
 
 This GitHub repository hosts a powerful and user-friendly web application for generating official letters in PDF format. Whether you need a participation letter, appreciation letter, appointment letter, or other formal documents, this tool simplifies the process. The application allows users to customize their letters by providing essential details such as applicant name, letter content, closing statements, and additional company information. Users can also enhance personalization by uploading a company logo.
 
